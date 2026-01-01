@@ -1,0 +1,146 @@
+---
+title: "WebSocket Status Updates"
+description: "Connect to real-time status updates via WebSocket"
+---
+
+## Overview
+
+WebSocket connections allow your application to receive real-time status updates without polling. This is ideal for applications that need to stay synchronized with live data changes.
+
+## Connection
+
+To establish a WebSocket connection, connect to the following endpoint:
+
+```
+wss://ws.monitry.net/ws/status
+```
+
+### Authentication
+
+You do not need any Auth headers for WebSocket connections. Instead, connect to the WebSocket and send a message containing the following.
+
+```json
+{
+  "type": "SUBSCRIBE",
+  "server_uuid": "your_server_uuid_here"
+}
+```
+
+## Events
+
+### Connection Established
+
+When a connection is successfully established, you'll receive a confirmation message:
+
+```json
+{
+  "type": "SUBSCRIBED",
+  "key": "SERVER UUID you provided"
+}
+```
+
+### Status Update
+
+Real-time status updates are sent each time a health check is performed. An example response is shown below:
+
+```json
+{
+  "type": "HEALTH_RESULT",
+  "payload": {
+    "serverUuid": "UUID",
+    "serviceUuid": "SERVICE UUID",
+    "region": "REGION",
+    "status": "unhealthy",
+    "httpStatus": 200,
+    "latencyMs": 84
+  }
+}
+```
+
+### Connection Closed
+
+To unsubscribe from updates, send the following JSON Data:
+
+```json
+{
+  "type": "UNSUBSCRIBED",
+  "key": "YOUR SERVER UUID"
+}
+```
+
+## Example Implementation
+
+### JavaScript/TypeScript
+
+```javascript
+const ws = new WebSocket(`wss://ws.monitry.net`);
+
+ws.onopen = () => {
+  ws.send(
+    JSON.stringify({
+      type: "SUBSCRIBE",
+      server_uuid: "YOUR SERVER UUID",
+    }),
+  );
+};
+
+ws.onmessage = (event) => {
+  const message = JSON.parse(event.data);
+
+  if (message.type === "SUBSCRIBED") {
+    console.log("Successfully subscribed to:", message.key);
+  } else if (message.type === "HEALTH_RESULT") {
+    console.log("Received health result:", message.payload);
+  }
+};
+
+ws.onerror = (err) => console.error("WebSocket error:", err);
+```
+
+### Python
+
+```python
+import json
+import websocket
+import time
+
+def on_message(ws, message):
+    data = json.loads(message)
+    if data["type"] == "HEALTH_RESULT":
+        print(f"Health result: {data['payload']}")
+
+def on_open(ws):
+    subscribe_msg = {
+        "type": "SUBSCRIBE",
+        "server_uuid": "your-service-id-here"
+    }
+    ws.send(json.dumps(subscribe_msg))
+
+ws = websocket.WebSocketApp(
+    "wss://ws.monitry.net/",
+    on_message=on_message,
+    on_open=on_open
+)
+ws.run_forever()
+```
+
+## Best Practices
+
+<Card title="Keep Connections Alive" icon="heart">
+  Send periodic keep-alive messages to prevent idle timeout.
+</Card>
+
+<Card title="Handle Disconnections Gracefully" icon="shield">
+  Implement automatic reconnection with exponential backoff to handle network
+  issues gracefully.
+</Card>
+
+<Card title="Parse Messages Carefully" icon="check">
+  Always validate the message structure before processing to prevent errors from
+  malformed data.
+</Card>
+
+<Card title="Monitor Resource Usage" icon="gauge">
+  Keep track of the number of active connections and implement connection
+  pooling if needed for high-volume applications.
+</Card>
