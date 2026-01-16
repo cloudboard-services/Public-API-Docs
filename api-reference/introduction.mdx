@@ -1,33 +1,45 @@
 ---
-title: 'Introduction'
-description: 'Example section for showcasing API endpoints'
+title: "Introduction"
+description: "Example section for showcasing API endpoints"
 ---
 
-<Note>
-  If you're not looking to build API reference documentation, you can delete
-  this section by removing the api-reference folder.
-</Note>
+## Creating an API Token
 
-## Welcome
+To create an API token, go onto the developer tab on the dashboard.
 
-There are two ways to build API documentation: [OpenAPI](https://mintlify.com/docs/api-playground/openapi/setup) and [MDX components](https://mintlify.com/docs/api-playground/mdx/configuration). For the starter kit, we are using the following OpenAPI specification.
+## Using Your API Token
 
-<Card
-  title="Plant Store Endpoints"
-  icon="leaf"
-  href="https://github.com/mintlify/starter/blob/main/api-reference/openapi.json"
->
-  View the OpenAPI specification file
-</Card>
+Include your token in the Authorization header for all API requests:
 
-## Authentication
+```bash
+curl -X GET https://api.monitry.net/<VERSION>/endpoint \
+  -H "Authorization: Bearer <TOKEN>"
+```
 
-All API endpoints are authenticated using Bearer tokens and picked up from the specification file.
+**JavaScript/Node.js Example:**
 
-```json
-"security": [
-  {
-    "bearerAuth": []
-  }
-]
+```javascript
+fetch("https://api.monitry.net/<VERSION>/endpoint", {
+  method: "GET",
+  headers: {
+    Authorization: "Bearer <TOKEN>",
+    "Content-Type": "application/json",
+  },
+})
+  .then((response) => response.json())
+  .then((data) => console.log(data));
+```
+
+**Python Example:**
+
+```python
+import requests
+
+headers = {
+    'Authorization': 'Bearer <TOKEN>',
+    'Content-Type': 'application/json'
+}
+
+response = requests.get('https://api.monitry.net/<VERSION>/endpoint', headers=headers)
+print(response.json())
 ```
